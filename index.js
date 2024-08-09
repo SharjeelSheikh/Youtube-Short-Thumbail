@@ -1,12 +1,17 @@
-function isValidYouTubeShortURL(url) {
-    const regex = /^https:\/\/(www\.)?youtube\.com\/shorts\/[a-zA-Z0-9_-]{11}$/;
+function isValidYouTubeURL(url) {
+    const regex = /^(https:\/\/(www\.)?youtube\.com\/(watch\?v=|shorts\/)|https:\/\/youtu\.be\/)[a-zA-Z0-9_-]{11}$/;
     return regex.test(url);
 }
 
 function getVideoId(url) {
     const urlObj = new URL(url);
-    const videoId = urlObj.pathname.split('/').pop();
-    return videoId;
+    if (urlObj.hostname === 'youtu.be') {
+        return urlObj.pathname.slice(1);
+    }
+    if (urlObj.pathname.startsWith('/shorts/')) {
+        return urlObj.pathname.split('/')[2];
+    }
+    return urlObj.searchParams.get('v');
 }
 
 function downloadThumbnail() {
@@ -17,11 +22,11 @@ function downloadThumbnail() {
     errorContainer.innerHTML = '';
     thumbnailContainer.innerHTML = '';
 
-    if (isValidYouTubeShortURL(url)) {
+    if (isValidYouTubeURL(url)) {
         const videoId = getVideoId(url);
         const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
         thumbnailContainer.innerHTML = `<img src="${thumbnailUrl}" alt="Thumbnail"><br><a href="${thumbnailUrl}" download="thumbnail.jpg">Download Thumbnail</a>`;
     } else {
-        errorContainer.innerHTML = 'Invalid URL. Please enter a valid YouTube Short URL.';
+        errorContainer.innerHTML = 'Invalid URL. Please enter a valid YouTube Video/Short URL.';
     }
 }
